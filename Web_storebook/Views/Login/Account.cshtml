@@ -1,0 +1,170 @@
+﻿@model Web_storebook.Models.ViewModel.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+ <h2>@ViewData["Title"]</h2>
+
+<form id="loginForm" method="post" action="@Url.Action("Account", "Login")">
+    <div class="form-group">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" required />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" type="password" class="form-control" required />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+</form>
+
+ @section Scripts {
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#loginForm').submit(function (e) {
+                e.preventDefault(); // Ngăn chặn form mặc định gửi đi
+
+                var form = $(this);
+                var username = form.find('input[name="Username"]').val().trim(); // Loại bỏ khoảng trắng
+                var password = form.find('input[name="Password"]').val().trim();
+                if (username === "" || password === "") {
+                    alert("Username and Password cannot be empty."); // Thông báo nếu có trường trống
+                    return; // Ngăn không gửi yêu cầu AJAX
+                }
+
+                var formData = {
+                    Username: username,
+                    Password: password
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: form.attr('action'), // Đảm bảo action URL là chính xác
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                       
+                            // Kiểm tra xem response có tồn tại và có Token không
+                        if (response && response.token) { // Kiểm tra xem response có tồn tại và có Token không
+                            localStorage.setItem("jwtToken", response.token);
+                            console.log(localStorage.getItem("jwtToken"));
+
+                            // Lưu token vào localStorage
+                            if (response.redirectUrl) {
+                                // Tiến hành chuyển hướng
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                alert("Redirect URL is undefined."); // Thông báo nếu không có redirectUrl
+                            }
+                        } else {
+                            alert("Login failed: Token is undefined."); // Thông báo nếu không có token
+                        }
+                                              
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 401) {
+                            alert("Invalid username or password."); // Thông báo khi thông tin đăng nhập không hợp lệ
+                        } else {
+                            alert("An error occurred. Please try again. Status: " + xhr.status + ", Response: " + xhr.responseText); // Thông báo lỗi chi tiết
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+   
+
+}
+ 
+
+@* @{
+    ViewData["Title"] = "Login";
+}
+
+<h2>Login</h2>
+
+<div>
+    <form id="loginForm" method="post">
+        <div class="form-group">
+            <label asp-for="Username">Username</label>
+            <input asp-for="Username" class="form-control" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Login</button>
+
+        <!-- Thông báo lỗi -->
+        <div id="errorMessage" class="text-danger" style="display:none;">
+            Invalid username or password.
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#loginForm").submit(function (e) {
+            e.preventDefault(); // Ngăn chặn hành vi mặc định của form
+
+            var model = {
+                Username: $("#Username").val(),
+                Password: $("#Password").val()
+            };
+            console.log(JSON.stringify(model));
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Account", "Login")', // Thay bằng tên controller thực tế
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(model),
+
+                success: function (response) {
+                    if (response.token) {
+                        // Lưu token vào localStorage
+                        localStorage.setItem('jwtToken', response.token);
+
+                        // Thực hiện request AJAX đến Home/Index với token trong header
+                        $.ajax({
+                            type: "GET",
+                            url: '@Url.Action("Index", "Home")',
+                            headers: {
+                                "Authorization": "Bearer " + localStorage.getItem('jwtToken')
+                            },
+                            success: function (response) {
+                                window.location.href = response.redirectUrl; // Chuyển hướng sau khi xác thực thành công
+                            },
+                            error: function (xhr) {
+                                if (xhr.status === 401) {
+                                    console.log("Unauthorized access");
+                                } else {
+                                    alert("Error accessing Home/Index");
+                                }
+                            }
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) {
+                        $("#errorMessage").show();  // Hiển thị thông báo lỗi nếu đăng nhập thất bại
+                    } else {
+                        alert("An error occurred. Please try again.");
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
+ *@

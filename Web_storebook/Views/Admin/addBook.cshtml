@@ -1,0 +1,190 @@
+﻿@using Web_storebook.Models.ViewModel
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ViewModelBook
+@{
+    ViewData["Title"]= "Thêm sách";
+}
+
+<h2>Thêm Sách Mới</h2>
+
+<form id="bookForm">
+    <div>
+        <label for="Author">Tác giả:</label>
+        <input type="text" id="Author" name="Author" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Title">Tiêu đề:</label>
+        <input type="text" id="Title" name="Title" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Description">Mô tả:</label>
+        <textarea id="Description" name="Description" class="form-control" required></textarea>
+    </div>
+
+    <div>
+        <label for="Publisher">Chọn Nhà Xuất Bản</label>
+        @Html.DropDownListFor(model => model.PublisherId, Model.PublisherList, "Chọn nhà xuất bản", new { @class = "form-control" })
+    </div>
+
+    <div>
+        <label for="Category">Chọn loại sách</label>
+        @Html.DropDownListFor(model => model.CategoryId, Model.CategoryList, "Chọn danh mục", new { @class = "form-control" })
+    </div>
+    <div>
+        <label for="Isbn"> Mã số sách tiêu chuẩn quốc tế:</label>
+        <input type="text" id="Isbn" name="Isbn" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Price">Giá tiền:</label>
+        <input type="number" id="Price" name="Price" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="DiscountPrice"> Khuyến mãi:</label>
+        <input type="text" id="DiscountPrice" name="DiscountPrice" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="PublicationDate"> Ngày sản xuất:</label>
+        <input type="date" id="PublicationDate" name="PublicationDate" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="StockQuantity"> Số lượng tồn:</label>
+        <input type="number" id="StockQuantity" name="StockQuantity" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Language"> Ngôn ngữ:</label>
+        <input type="text" id="Language" name="Language" class="form-control" required />
+    </div>
+    <div>
+        <label for="Pages"> Số trang:</label>
+        <input type="number" id="Pages" name="Pages" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Weight"> Cân nặng  :</label>
+        <input type="text" id="Weight" name="Weight" class="form-control" required />
+    </div>
+
+    <div>
+        <label for="Dimension"> Kích thước  :</label>
+        <input type="text" id="Dimension" name="Dimension" class="form-control" required />
+    </div>
+    <div>
+        <input type="file" id="fileupload">
+        <img id="image" style="max-width: 300px; height: auto;" alt="Uploaded Image" />
+        <input type="text" id="geturlcloud" hidden readonly style="width: 100%;">
+
+    </div>
+
+
+
+    <br />
+    <button type="submit" class="btn btn-primary">Thêm Sách</button>
+
+
+
+</form>
+
+<div id="result"></div>
+
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#bookForm').on('submit', function (e) {
+                e.preventDefault(); // Ngăn form submit truyền thống
+
+                // Lấy dữ liệu từ form
+                var formData = {
+                    Author: $('#Author').val(),
+                    Title: $('#Title').val(),
+                    Description: $('#Description').val(),
+                    Dimension: $('#Dimension').val(),
+                    Weight: $('#Weight').val(),
+                    Pages: $('#Pages').val(),
+                    Language: $('#Language').val(),
+                    StockQuantity: $('#StockQuantity').val()
+                    , PublicationDate: $('#PublicationDate').val()
+                    , DiscountPrice: $('#DiscountPrice').val()
+                    , Price: $('#Price').val()
+                    , Isbn: $('#Isbn').val()
+                    , CategoryId: $('#PublisherId').val()
+                    , PublisherId: $('#Publisher').val()
+                    , ImageBook: $('#geturlcloud').val()
+
+                };
+                // Gọi AJAX đến server
+                $.ajax({
+                    url: '@Url.Action("AddBook", "Home")', 
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(formData),
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            // Nếu thành công, chuyển hướng đến URL được trả về
+                            alert(response.message);
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            // Nếu có lỗi, hiển thị thông báo lỗi
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('#result').html('<p class="text-danger">Có lỗi xảy ra: ' + error + '</p>');
+                    }
+                });
+            });
+        });
+
+
+       // upload a
+
+        const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dju4wtxj8/image/upload';
+        const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageInput = document.querySelector('#fileupload');
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                fetch(CLOUDINARY_URL, {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then((data) => {
+                        if (data.secure_url !== '') {
+                            const uploadedFileUrl = data.secure_url;
+
+                            // Hiển thị hình ảnh
+                            document.getElementById('image').src = uploadedFileUrl;
+
+                            // Hiển thị URL hình ảnh
+                            document.getElementById('geturlcloud').value = uploadedFileUrl;
+                        } else {
+                            alert('Upload thất bại');
+                        }
+                    })
+                    .catch(err => console.error(err));
+            });
+        });
+    </script>
+
+
+}
+
+
+      
+

@@ -1,0 +1,146 @@
+﻿@model List<Web_storebook.Models.DTO.CartService.CartItem>
+
+<style>
+    /* General styling */
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .empty-cart {
+        color: #f00;
+        font-size: 1.2em;
+    }
+
+    /* Cart table styling */
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .cart-table th, .cart-table td {
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .cart-table th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .cart-table td img {
+            width: 60px;
+            height: auto;
+        }
+
+    /* Quantity input */
+    .quantity-input {
+        width: 50px;
+        padding: 5px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    /* Buttons styling */
+    .btn-update, .btn-remove {
+        padding: 8px 12px;
+        background-color: #5cb85c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-remove {
+        background-color: #d9534f;
+    }
+
+        .btn-update:hover, .btn-remove:hover {
+            opacity: 0.8;
+        }
+
+    /* Checkout button */
+    .cart-actions {
+        text-align: right;
+    }
+
+    .btn-checkout {
+        padding: 10px 20px;
+        background-color: #0275d8;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 1.1em;
+    }
+
+        .btn-checkout:hover {
+            background-color: #025aa5;
+        }
+
+    .total-price {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-top: 20px;
+        text-align: right;
+    }
+</style>
+
+<h2>Giỏ hàng của bạn</h2>
+
+@if (!Model.Any())
+{
+    <p class="empty-cart">Giỏ hàng của bạn đang trống</p>
+}
+else
+{
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Giá</th>
+                <th>Hình ảnh</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Book.Title</td>
+                    <td>
+                        <form asp-action="UpdateCart" method="post" class="update-form">
+                            <input type="number" name="quantity" value="@item.Quantity" min="1" class="quantity-input" />
+                            <input type="hidden" name="productid" value="@item.BookCode" />
+                            <input type="submit" value="Cập nhật" class="btn-update" />
+                        </form>
+                    </td>
+                    <td>@String.Format("{0:N0}", item.Book.Price * item.Quantity) đ</td>
+                    <td><img src="@item.Book.ImageBook" alt="@item.Book.Title" class="cart-image" /></td>
+                    <td>
+                        <form asp-action="RemoveCart" method="post" asp-route-bookcode="@item.BookCode">
+                            <input type="submit" value="Xóa" class="btn-remove" />
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* Tính tổng tiền *@
+    var totalPrice = Model.Sum(item => item.Book.Price * item.Quantity);
+    <div class="total-price">Tổng tiền: @String.Format("{0:N0}", totalPrice) đ</div>
+
+    <div class="cart-actions">
+        <a asp-action="CheckOut" class="btn-checkout">Tiến hành thanh toán</a>
+    </div>
+}

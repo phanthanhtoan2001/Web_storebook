@@ -1,0 +1,35 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<Web_storebook.Models.Book>
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(m => book.Title)</td>
+                <td>@Html.DisplayFor(m => book.Author)</td>
+                <td>@string.Format("{0:C}", book.Price)</td>
+                <td>
+                    <img src="@book.ImageBook" class="img-fluid rounded" style="width: 100px;" alt="Book Image">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm delete-book-btn" data-bookcode="@book.BookCode">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

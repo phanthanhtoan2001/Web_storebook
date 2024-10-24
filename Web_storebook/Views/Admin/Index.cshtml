@@ -1,0 +1,137 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/views/shared/View.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Book Management</h2>
+
+    <!-- Thanh tìm kiếm -->
+    <div class="input-group mb-3">
+        <input type="text" id="myInput" class="form-control" placeholder="Search for books by title, author, or code..." title="Type in a name">
+        <button class="btn btn-primary" type="button">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+
+    <!-- Bảng sách -->
+    <div class="table-responsive">
+        <table id="myTable" class="table table-striped table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Price</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="bookTableBody">
+                @* Dữ liệu ban đầu khi chưa tìm kiếm *@
+                @foreach (var book in Model)
+                {
+                    <tr class="book-row" data-bookcode="@book.BookCode">
+                        <td>@book.Title</td>
+                        <td>@book.Author</td>
+                        <td>@string.Format("{0:C}", book.Price)</td>
+                        <td>
+                            <img src="@book.ImageBook" class="img-fluid rounded" style="width: 100px;" alt="Book Image">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm delete-book-btn" data-bookcode="@book.BookCode">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Handle row click for editing a book
+        $('.book-row').click(function (e) {
+            if (!$(e.target).hasClass('delete-book-btn')) {
+                var bookCode = $(this).data('bookcode');
+                window.location.href = '@Url.Action("EditBook", "Admin")' + '?bookcode=' + bookCode;
+            }
+        });
+
+        // Handle delete book button click
+        $('.delete-book-btn').click(function (e) {
+            e.stopPropagation(); // Prevent the row click event from firing
+            var bookCode = $(this).data('bookcode');
+            if (confirm('Are you sure you want to delete this book?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteBook", "Admin")' + '?bookcode=' + bookCode,
+                    type: 'DELETE',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Include CSRF token
+                    },
+                    success: function (result) {
+                        alert(result.message);
+                        location.reload(); // Reload page after successful delete
+                    },
+                    error: function (xhr) {
+                        // Handle case when responseJSON is undefined or error message is missing
+                        var errorMessage = xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : 'An error occurred while deleting the book.';
+                        alert(errorMessage);
+                    }
+                });
+            }
+        });
+    });
+
+
+   
+</script>
+
+<button type="button" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddBook", "Admin")'">Chuyển đến Form Thêm Sách</button>
+@section Scripts {
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Xử lý khi nhập tìm kiếm
+            $('#myInput').on('keyup', function () {
+                var searchKey = $(this).val(); // Lấy giá trị từ input
+
+                // Gửi yêu cầu AJAX đến server
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Search", "Admin")', // Thay thế 'YourControllerName' bằng tên controller
+                    data: { key: searchKey },
+                    success: function (response) {
+                        // Thay thế nội dung của tbody bằng kết quả trả về
+                        $('#bookTableBody').html(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Search error: ", error);
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+<div>
+    @if (ViewBag.UserName == null)
+    {
+        <h2>Chào mừng, bạn chưa đăng nhập.</h2>
+        <a href="@Url.Action("Signin", "Login")" class="btn btn-primary">Đăng nhập bằng Google</a>
+    }
+    else
+    {
+        <h2>Xin chào, @ViewBag.UserName!</h2>
+        <img src="@ViewBag.UserProfilePicture" alt="Profile Picture" width="100" height="100" />
+        <br />
+        <a href="@Url.Action("Logout", "Login")" class="btn btn-danger">Đăng xuất</a>
+    }
+</div>

@@ -1,0 +1,64 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+}
+
+@model Web_storebook.Models.Book
+
+@{
+    ViewBag.Title = "Book Details";
+}
+
+<div class="book-details">
+    <div class="book-image">
+        <img src="@Model.ImageBook" alt="@Model.Title" class="img-fluid" />
+    </div>
+
+    <div class="book-info">
+        <h3>Author: @Model.Author</h3>
+        <p><strong>ISBN:</strong> @Model.Isbn</p>
+        <p><strong>Price:</strong> @String.Format("{0:0,0} ₫", Model.Price)</p>
+
+        @if (Model.DiscountPrice.HasValue)
+        {
+            <p><strong>Discount Price:</strong> @String.Format("{0:0,0} ₫", Model.DiscountPrice.Value)</p>
+        }
+
+        <p><strong>Description:</strong></p>
+        <p>@Model.Description</p>
+
+        <p><strong>Publication Date:</strong> @Model.PublicationDate.ToString("dd/MM/yyyy")</p>
+        <p><strong>Language:</strong> @Model.Language</p>
+        <p><strong>Pages:</strong> @Model.Pages</p>
+        <p><strong>Weight:</strong> @Model.Weight kg</p>
+        <p><strong>Dimension:</strong> @Model.Dimension</p>
+        <p><strong>Cover Type:</strong> @Model.CoverType</p>
+        <p><strong>Stock Quantity:</strong> @Model.StockQuantity</p>
+       <p><strong>Publisher:</strong> @Model.Publisher.PublisherName</p> <!-- Bạn có thể thay đổi để hiển thị tên Publisher -->
+       <p><strong>Category:</strong> @Model.Category.CategoryName</p>  <!-- Bạn có thể thay đổi để hiển thị tên Category -->
+
+        <div class="actions">
+            <button class="add-to-cart" data-bookcode="@Model.BookCode">Add to Cart</button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .book-details {
+        display: flex;
+        margin: 20px;
+    }
+    .book-image {
+        flex: 1;
+        margin-right: 20px;
+    }
+    .book-info {
+        flex: 2;
+    }
+    .actions {
+        margin-top: 20px;
+    }
+</style>

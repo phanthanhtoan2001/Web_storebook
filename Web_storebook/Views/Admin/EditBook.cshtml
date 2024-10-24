@@ -1,0 +1,57 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model Web_storebook.Models.Book
+
+<h2>Edit Book Details</h2>
+<form id="editBookForm">
+    <div>
+        <label>Book Code:</label>
+        <input type="text" id="bookCode" value="@Model.BookCode" disabled />
+    </div>
+    <div>
+        <label>Title:</label>
+        <input type="text" id="title" value="@Model.Title" />
+    </div>
+    <div>
+        <label>Author:</label>
+        <input type="text" id="author" value="@Model.Author" />
+    </div>
+    <div>
+        <label>Price:</label>
+        <input type="text" id="price" value="@Model.Price" />
+    </div>
+    <button type="button" id="submitBtn">Update Book</button>
+</form>
+
+<!-- Display success or error message -->
+<div id="resultMessage"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#submitBtn').click(function () {
+            var updatedBook = {
+                BookCode: $('#bookCode').val(),
+                Title: $('#title').val(),
+                Author: $('#author').val(),
+                Price: $('#price').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("EditBook", "Home")', 
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedBook),
+                success: function (response) {
+                    $('#resultMessage').html('<p>' + response.message + '</p>');
+                },
+                error: function (xhr, status, error) {
+                    $('#resultMessage').html('<p>Error: ' + xhr.responseText + '</p>');
+                }
+            });
+        });
+    });
+</script>

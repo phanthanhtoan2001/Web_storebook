@@ -1,0 +1,127 @@
+﻿@model List<Web_storebook.Models.Book>
+@Html.AntiForgeryToken()
+
+@{
+    ViewData["Title"] = "Home Page";
+    var isViewAll = ViewBag.ViewAll ?? false; // Kiểm tra trạng thái xem có hiển thị tất cả sách không
+
+}
+
+<link href="~/css/style.css" rel="stylesheet" />
+
+	<section id="featured-books" class="py-5 my-5">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+
+					<div class="section-header align-center">
+						<div class="title">
+							<span>Some quality items</span>
+						</div>
+						<h2 class="section-title">Featured Books</h2>
+					</div>
+
+					<div class="product-list" data-aos="fade-up">
+						<div class="row">
+                        @foreach (var book in Model)
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="product-item">
+                                                    <a href="/Home/Details/@book.BookCode">
+                                                    <figure class="product-style">
+                                                        <img src="@book.ImageBook" alt="Books" class="product-item">
+                                                        
+                                                    </figure>
+                                                    <figcaption>
+                                                        <h3>@book.Title</h3>
+                                                        <span>@book.Author</span>
+                                                         <div class="item-price">@String.Format("{0:0,0} ₫", book.Price)</div>
+                                                    </figcaption>
+                                                    </a>
+                                    <button data-bookcode="@book.BookCode" type="button" class="add-to-cart" data-product-tile="add-to-cart">
+                                        Add to
+                                        Cart
+                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+
+						</div><!--ft-books-slider-->
+					</div><!--grid-->
+
+
+				</div><!--inner-content-->
+			</div>
+
+			<div class="row">
+				<div class="col-md-12">
+                @if (!isViewAll)
+                {
+                    <form method="get" action="@Url.Action("Index")">
+
+					<div class="btn-wrap align-right">
+                        <input type="hidden" name="viewAll" value="true" />
+                        <button type="submit">
+						<a href="#" class="btn-accent-arrow">View all products <i
+								class="icon icon-ns-arrow-right"></i></a>
+                        </button>
+					</div>
+                   </form>
+                }
+
+				</div>
+			</div>
+		</div>
+	</section>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(".add-to-cart").click(function () {
+            var bookCode = $(this).data("bookcode"); // Lấy giá trị bookCode từ thuộc tính data
+
+            $.ajax({
+                url: '/cart/addcart/' + bookCode, // URL của action AddToCart, kiểm tra /cart/addcart/{bookCode}
+                type: 'POST', // Phương thức POST
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }, // Đảm bảo server nhận dạng là AJAX request
+                success: function (result) {
+                    alert(result.message);
+                    $.ajax({
+                        url: '/cart/count', // Call the GetCartItemCount endpoint
+                        type: 'GET',
+                        success: function (countResult) {
+                            $('#cart-item-count').text(countResult.count); // Update the displayed count
+                            console.log('Updated cart item count:', countResult.count); // Log the updated count to the console
+
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Error retrieving cart count:', error);
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    alert('Có lỗi xảy ra, vui lòng thử lại!'); // Thông báo lỗi
+                    console.log('Error:', error); // Xem chi tiết lỗi
+                    console.log('Status:', status); // Trạng thái lỗi
+                    console.log('Response Text:', xhr.responseText); // Xem phản hồi từ server
+                }
+            });
+        });
+
+
+       
+
+
+    </script>
+}
+
+<a href="@Url.Action("Cart", "Cart")" class="btn btn-secondary">Back to List</a>
+<div>
+    <a href="@Url.Action("Cart", "Cart")" class="btn btn-primary">Xem Giỏ Hàng</a>
+</div>
+
+
+<!-- jQuery and other scripts -->
+
+
+
